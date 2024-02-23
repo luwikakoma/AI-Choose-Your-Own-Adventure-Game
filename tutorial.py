@@ -1,3 +1,4 @@
+import os
 from cassandra.cluster import Cluster
 from cassandra.auth import PlainTextAuthProvider
 from langchain.memory import CassandraChatMessageHistory, ConversationBufferMemory
@@ -14,7 +15,11 @@ with open("choose_your_own_adventure-token.json") as f:
 
 CLIENT_ID = secrets["clientId"]
 CLIENT_SECRET = secrets["secret"]
+
+#Add your own keyspace name here
 ASTRA_DB_KEYSPACE = ""
+
+#Add your unique PoenAI API key here
 OPENAI_API_KEY = ""
 
 auth_provider = PlainTextAuthProvider(CLIENT_ID, CLIENT_SECRET)
@@ -53,16 +58,19 @@ Human: {human_input}
 AI:"""
 
 prompt = PromptTemplate(
-    input_variables=["chat_history", "human_input"],
-    template=template
+    input_variables = ["chat_history", "human_input"],
+    template= template,
+    
 )
 
-llm = OpenAI(openai_api_key=OPENAI_API_KEY)
+#adding a stop sequence to prevent the game from playing itself
+llm = OpenAI(openai_api_key=OPENAI_API_KEY, model_kwargs={"stop": ["Human:"]})
 llm_chain = LLMChain(
-    llm=llm,
-    prompt=prompt,
-    memory=cass_buff_memory
+    llm = llm,
+    prompt = prompt,
+    memory = cass_buff_memory
 )
+
 
 choice = "start"
 
